@@ -1,0 +1,275 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Admin Dashboard - Dark Theme */
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 222 47% 14%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 47% 12%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 180 40% 93%;
+    --accent-foreground: 195 50% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 47% 18%;
+    --input: 222 47% 18%;
+    --ring: 199 89% 48%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens for Admin */
+    --gradient-primary: linear-gradient(135deg, hsl(205 90% 45%) 0%, hsl(195 90% 60%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(210 60% 12%) 0%, hsl(210 60% 8%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(222 47% 10% / 0.8) 0%, hsl(222 47% 8% / 0.6) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210 70% 10%) 0%, hsl(205 80% 25%) 50%, hsl(210 70% 10%) 100%);
+    
+    --shadow-glow: 0 0 60px hsl(199 89% 48% / 0.3);
+    --shadow-card: 0 8px 32px hsl(222 47% 4% / 0.5);
+    --shadow-button: 0 4px 20px hsl(199 89% 48% / 0.4);
+
+    --font-heading: 'Be Vietnam Pro', sans-serif;
+    --font-body: 'Be Vietnam Pro', sans-serif;
+
+    /* Sidebar */
+    --sidebar-background: 222 47% 5%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 222 47% 6%;
+    --sidebar-accent: 222 47% 10%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 222 47% 14%;
+    --sidebar-ring: 199 89% 48%;
+  }
+
+  .light {
+    --background: 210 40% 98%; 
+    --foreground: 222 47% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 10%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 165 82% 45%;
+    --accent-foreground: 222 47% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 199 89% 48%;
+
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.9) 0%, hsl(210 40% 96% / 0.8) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210 40% 98%) 0%, hsl(210 40% 95%) 50%, hsl(210 40% 98%) 100%);
+    --shadow-card: 0 8px 32px hsl(222 47% 10% / 0.1);
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 10%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 10%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 199 89% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer components {
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+
+  .glass-card {
+    @apply backdrop-blur-xl border border-border/50 shadow-lg;
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .glow-effect {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-1;
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Admin specific styles */
+  .admin-card {
+    @apply bg-card rounded-xl border border-border p-6 transition-all duration-200;
+  }
+
+  .admin-card:hover {
+    @apply border-primary/30;
+    box-shadow: 0 0 20px hsl(199 89% 48% / 0.1);
+  }
+
+  .admin-sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground transition-all duration-200;
+  }
+
+  .admin-sidebar-item:hover {
+    @apply bg-sidebar-accent text-foreground;
+  }
+
+  .admin-sidebar-item.active {
+    @apply bg-primary/10 text-primary font-medium;
+  }
+
+  .admin-input {
+    @apply bg-background border border-border rounded-lg px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200;
+  }
+
+  .admin-button-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200;
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--shadow-button);
+  }
+
+  .admin-button-primary:hover {
+    @apply opacity-90 -translate-y-0.5;
+  }
+
+  .admin-button-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-secondary text-secondary-foreground border border-border transition-all duration-200;
+  }
+
+  .admin-button-secondary:hover {
+    @apply bg-secondary/80 border-primary/30;
+  }
+
+  .admin-button-destructive {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-destructive/10 text-destructive border border-destructive/20 transition-all duration-200;
+  }
+
+  .admin-button-destructive:hover {
+    @apply bg-destructive/20 border-destructive/40;
+  }
+
+  .admin-table {
+    @apply w-full border-collapse;
+  }
+
+  .admin-table th {
+    @apply text-left px-4 py-3 text-sm font-medium text-muted-foreground border-b border-border bg-muted/30;
+  }
+
+  .admin-table td {
+    @apply px-4 py-4 border-b border-border/50;
+  }
+
+  .admin-table tr:hover {
+    @apply bg-muted/20;
+  }
+
+  .admin-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .admin-badge-primary {
+    @apply bg-primary/10 text-primary;
+  }
+
+  .admin-badge-accent {
+    @apply bg-accent/10 text-accent;
+  }
+
+  .admin-badge-muted {
+    @apply bg-muted text-muted-foreground;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out forwards;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
