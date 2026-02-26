@@ -201,7 +201,7 @@ const BlogsPage = () => {
                       setFormData({ 
                         ...formData, 
                         title: e.target.value,
-                        slug: formData.slug || generateSlug(e.target.value)
+                        slug: generateSlug(e.target.value)
                       });
                     }}
                     placeholder="VD: Giới thiệu hệ thống ERP mới"

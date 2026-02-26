@@ -67,7 +67,7 @@ const ServicesPage = () => {
 
   // Auto-generate path when title changes
   useEffect(() => {
-    if (!editingItem && formData.title) {
+    if (editingItem && formData.title) {
       const newPath = generateServicePath(formData.title);
       setFormData(prev => ({ ...prev, href: newPath }));
     }

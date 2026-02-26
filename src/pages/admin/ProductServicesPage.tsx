@@ -122,7 +122,7 @@ const ProductServicesPage = () => {
     updated[index] = { ...updated[index], [field]: value };
     
     // Auto-generate path when title changes
-    if (field === "title" && selectedService && !editingItem) {
+    if (field === "title" && selectedService && editingItem) {
       updated[index].path = generateProductPath(selectedService.title, value);
     }
     
