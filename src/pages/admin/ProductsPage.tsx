@@ -80,7 +80,7 @@ const ProductsPage = () => {
   });
 
   useEffect(() => {
-    if (editingItem && formData.title && formData.service_id) {
+    if ( formData.title && formData.service_id) {
       const selectedService = services?.find(s => s.id === formData.service_id);
       if (selectedService) {
         const newPath = generateProductPath(selectedService.title, formData.title);

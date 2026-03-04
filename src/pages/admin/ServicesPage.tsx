@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { useServices, useCreateService, useUpdateService, useDeleteService, Service } from "@/hooks/useServices";
 import { Json } from "@/integrations/supabase/types";
-import { generateServicePath } from "@/lib/slugify";
+// import { generateServicePath } from "@/lib/slugify"; // Tạm thời comment dòng này để dùng hàm nội bộ bên dưới
 import { Factory, Home, Globe, Cpu, Database, Shield, Zap, Settings } from "lucide-react";
 
 interface ServiceImage {
@@ -32,8 +32,28 @@ interface ServiceImage {
   alt: string;
 }
 
-// Mở rộng interface Service để tránh lỗi TypeScript nếu hook chưa cập nhật type
-
+// --- 1. HÀM TẠO SLUG TỰ ĐỘNG (Xử lý Tiếng Việt) ---
+const generateSlug = (str: string) => {
+  if (!str) return "";
+  
+  str = str.toLowerCase();
+  
+  // Xóa dấu tiếng Việt
+  str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  str = str.replace(/[đĐ]/g, "d");
+  
+  // Xóa ký tự đặc biệt
+  str = str.replace(/([^0-9a-z-\s])/g, "");
+  
+  // Thay khoảng trắng bằng gạch ngang
+  str = str.replace(/(\s+)/g, "-");
+  
+  // Xóa gạch ngang dư thừa
+  str = str.replace(/-+/g, "-");
+  str = str.replace(/^-+|-+$/g, "");
+  
+  return `/${str}`; // Thêm dấu / ở đầu
+};
 
 const iconOptions = ["Factory", "Home", "Globe", "Cpu", "Database", "Shield", "Zap", "Settings"];
 const gradientOptions = [
@@ -51,9 +71,8 @@ const ServicesPage = () => {
   const deleteService = useDeleteService();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<Service  | null>(null);
+  const [editingItem, setEditingItem] = useState<Service | null>(null);
   
-  // 1. Thêm sort_order vào state
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -62,13 +81,15 @@ const ServicesPage = () => {
     gradient: "from-blue-500 to-cyan-500",
     images: [] as ServiceImage[],
     href: "",
-    sort_order: 0, // Mặc định là 0
+    sort_order: 0,
   });
 
-  // Auto-generate path when title changes
+  // --- 2. LOGIC TỰ ĐỘNG CẬP NHẬT ĐƯỜNG DẪN ---
   useEffect(() => {
-    if (editingItem && formData.title) {
-      const newPath = generateServicePath(formData.title);
+    // Logic: Chỉ tự động tạo đường dẫn khi đang THÊM MỚI (editingItem === null)
+    // Nếu đang Edit, giữ nguyên đường dẫn cũ để tránh lỗi SEO (404), trừ khi user tự sửa
+    if ( formData.title) {
+      const newPath = generateSlug(formData.title);
       setFormData(prev => ({ ...prev, href: newPath }));
     }
   }, [formData.title, editingItem]);
@@ -83,12 +104,12 @@ const ServicesPage = () => {
       gradient: "from-blue-500 to-cyan-500",
       images: [],
       href: "",
-      sort_order: 0, // Reset về 0
+      sort_order: 0,
     });
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (item: Service ) => {
+  const handleEdit = (item: Service) => {
     setEditingItem(item);
     const parsedFeatures = Array.isArray(item.features) ? (item.features as unknown as string[]) : [];
     const parsedImages = Array.isArray(item.images) ? (item.images as unknown as ServiceImage[]) : [];
@@ -101,7 +122,7 @@ const ServicesPage = () => {
       gradient: item.gradient || "from-blue-500 to-cyan-500",
       images: parsedImages,
       href: item.href || "",
-      sort_order: item.sort_order || 0, // Lấy giá trị từ item
+      sort_order: item.sort_order || 0,
     });
     setIsDialogOpen(true);
   };
@@ -128,6 +149,7 @@ const ServicesPage = () => {
     setIsDialogOpen(false);
   };
 
+  // ... (Giữ nguyên các hàm addFeature, updateFeature, removeFeature, addImage, updateImage, removeImage)
   const addFeature = () => {
     setFormData({ ...formData, features: [...formData.features, ""] });
   };
@@ -179,17 +201,15 @@ const ServicesPage = () => {
     }
   }
 
-  // 2. Logic sắp xếp dữ liệu trước khi hiển thị
   const sortedServices = services 
     ? [...services].sort((a: Service , b: Service ) => {
         const orderA = a.sort_order ?? 0;
         const orderB = b.sort_order ?? 0;
-        return orderA - orderB; // Sắp xếp tăng dần (bé trước, lớn sau)
+        return orderA - orderB;
       }) 
     : [];
 
   const columns = [
-    // Thêm cột hiển thị thứ tự
     {
       key: "sort_order",
       label: "STT",
@@ -266,7 +286,6 @@ const ServicesPage = () => {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                 
-                {/* Hàng 1: Thứ tự hiển thị (Mới) + Tên dịch vụ */}
                 <div className="grid grid-cols-4 gap-4">
                   <div className="col-span-1">
                     <Label htmlFor="sort_order">Thứ tự</Label>
@@ -292,16 +311,19 @@ const ServicesPage = () => {
                   </div>
                 </div>
 
-                {/* Hàng 2: Đường dẫn */}
+                {/* Phần đường dẫn được tự động điền */}
                 <div>
-                    <Label htmlFor="href">Đường dẫn (tự động)</Label>
+                    <Label htmlFor="href">Đường dẫn (Tự động)</Label>
                     <Input
                       id="href"
                       value={formData.href}
                       onChange={(e) => setFormData({ ...formData, href: e.target.value })}
-                      placeholder="Tự động tạo từ tên"
-                      className="mt-1"
+                      placeholder="/duong-dan-tu-dong"
+                      className="mt-1 font-mono text-sm"
                     />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                        * Tự động tạo từ tên khi thêm mới. Có thể chỉnh sửa thủ công.
+                    </p>
                 </div>
 
                 <div>
@@ -356,7 +378,7 @@ const ServicesPage = () => {
                   </div>
                 </div>
                 
-                {/* Features */}
+                {/* Features Section */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label>Danh sách tính năng</Label>
@@ -387,7 +409,7 @@ const ServicesPage = () => {
                   </div>
                 </div>
 
-                {/* Images with upload */}
+                {/* Images Section */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label>Hình ảnh</Label>
@@ -450,7 +472,7 @@ const ServicesPage = () => {
 
         <DataTable
           columns={columns}
-          data={sortedServices} // Sử dụng danh sách đã sắp xếp
+          data={sortedServices}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
