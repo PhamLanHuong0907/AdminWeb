@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DataTable } from "@/components/admin/DataTable";
 import { FileUploadInput } from "@/components/admin/FileUploadInput";
-import { Plus, Loader2, X } from "lucide-react";
+import { Plus, Loader2, X, Check, ChevronsUpDown } from "lucide-react"; // Thêm Check, ChevronsUpDown
+import * as Icons from "lucide-react"; // IMPORT TOÀN BỘ ICONS
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,19 +22,101 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useServices } from "@/hooks/useServices";
 import { Json } from "@/integrations/supabase/types";
 import { generateProductPath } from "@/lib/slugify";
 
-// SỬA 1: Đổi 'icon' thành 'iconName' cho khớp với Client
+// --- 1. SETUP DANH SÁCH ICON ---
+// Lấy danh sách tên icon, lọc bỏ các biến không phải icon
+const iconList = Object.keys(Icons).filter(
+  (key) => key !== "createLucideIcon" && key !== "default" && isNaN(Number(key))
+);
+
+// --- 2. COMPONENT CHỌN ICON (SEARCHABLE DROPDOWN) ---
+const IconPicker = ({ value, onChange }: { value: string; onChange: (val: string) => void }) => {
+  const [open, setOpen] = useState(false);
+
+  // Render icon đang chọn (nếu có)
+  const SelectedIcon = value && (Icons as any)[value] ? (Icons as any)[value] : null;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+        >
+          <div className="flex items-center gap-2">
+             {SelectedIcon ? <SelectedIcon className="w-4 h-4" /> : <Icons.HelpCircle className="w-4 h-4 opacity-50"/>}
+             <span className="truncate">{value || "Chọn Icon..."}</span>
+          </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Tìm kiếm icon (vd: star)..." />
+          <CommandList>
+            <CommandEmpty>Không tìm thấy icon.</CommandEmpty>
+            <CommandGroup className="max-h-[200px] overflow-y-auto">
+              {iconList.map((iconName) => {
+                 // Lấy component icon để hiển thị trong list
+                 const IconComp = (Icons as any)[iconName];
+                 return (
+                  <CommandItem
+                    key={iconName}
+                    value={iconName}
+                    onSelect={(currentValue) => {
+                      // CommandItem thường lowercase value, nên ta dùng iconName gốc
+                      onChange(iconName);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === iconName ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    <div className="flex items-center gap-2">
+                        {IconComp && <IconComp className="w-4 h-4 text-muted-foreground" />}
+                        <span>{iconName}</span>
+                    </div>
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+// ... Các interface giữ nguyên ...
 interface InfoItem {
   iconName: string; 
   text: string;
   subText: string;
 }
 
-// SỬA 2: Đổi 'infos' thành 'items'
 interface Feature {
   tag: {
     icon: string;
@@ -106,11 +189,9 @@ const ProductsPage = () => {
   const handleEdit = (item: ProductWithService) => {
     setEditingItem(item);
     
-    // SỬA 3: Map dữ liệu an toàn để tương thích với cả DB cũ và mới
     const parsedFeatures = Array.isArray(item.features) 
       ? (item.features as unknown as (Feature & { infos?: InfoItem[] })[]).map(f => ({
           ...f,
-          // Lấy items, nếu không có thì thử lấy infos (DB cũ), nếu vẫn không có thì gán mảng rỗng
           items: f.items || f.infos || []
         }))
       : [];
@@ -159,7 +240,7 @@ const ProductsPage = () => {
           title: "",
           description: "",
           image: "",
-          items: [], // SỬA 4: Dùng items
+          items: [], 
         },
       ],
     });
@@ -179,7 +260,6 @@ const ProductsPage = () => {
     setFormData({ ...formData, features: newFeatures });
   };
 
-  // SỬA 5: Cập nhật các hàm thao tác với thông tin con
   const addInfoToFeature = (featureIndex: number) => {
     const newFeatures = [...formData.features];
     newFeatures[featureIndex] = {
@@ -398,11 +478,12 @@ const ProductsPage = () => {
                       
                       {/* Tag Info */}
                       <div className="grid grid-cols-3 gap-2">
-                        <Input
-                          placeholder="Icon (VD: Plane)"
-                          value={feature.tag.icon}
-                          onChange={(e) => updateFeature(index, "tag.icon", e.target.value)}
+                        {/* --- SỬA: Dùng IconPicker thay cho Input --- */}
+                        <IconPicker 
+                            value={feature.tag.icon}
+                            onChange={(val) => updateFeature(index, "tag.icon", val)}
                         />
+                        
                         <Input
                           placeholder="Text (VD: Drone)"
                           value={feature.tag.text}
@@ -448,15 +529,16 @@ const ProductsPage = () => {
                           </Button>
                         </div>
                         <div className="space-y-2">
-                          {/* SỬA 6: Render từ mảng items */}
                           {feature.items.map((info, infoIndex) => (
                             <div key={infoIndex} className="flex gap-2 items-center">
-                              <Input
-                                placeholder="Tên Icon (VD: ShieldCheck)"
-                                value={info.iconName}
-                                onChange={(e) => updateInfoInFeature(index, infoIndex, "iconName", e.target.value)}
-                                className="flex-1"
-                              />
+                              {/* --- SỬA: Dùng IconPicker cho thông tin con luôn --- */}
+                              <div className="flex-1">
+                                <IconPicker 
+                                    value={info.iconName}
+                                    onChange={(val) => updateInfoInFeature(index, infoIndex, "iconName", val)}
+                                />
+                              </div>
+
                               <Input
                                 placeholder="Text"
                                 value={info.text}
