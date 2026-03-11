@@ -20,21 +20,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const checkAdminRole = async (userId: string) => {
-    try {
-      const { data, error } = await supabase.rpc('has_role', {
-        _user_id: userId,
-        _role: 'admin'
-      });
-      if (error) {
-        console.error("Error checking admin role:", error);
-        return false;
-      }
-      return data === true;
-    } catch (error) {
-      console.error("Error checking admin role:", error);
-      return false;
-    }
-  };
+  try {
+    // Kiểm tra role 'admin'
+    const { data: isAdminRole } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin'
+    });
+
+    // Nếu đã là admin rồi thì return true luôn, không cần check tiếp
+    if (isAdminRole) return true;
+
+    // Nếu không phải admin, kiểm tra tiếp role 'user'
+    const { data: isUserRole } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'user'
+    });
+
+    return isUserRole === true;
+    
+  } catch (error) {
+    console.error("Error checking roles:", error);
+    return false;
+  }
+};
 
   useEffect(() => {
     // Set up auth state listener FIRST

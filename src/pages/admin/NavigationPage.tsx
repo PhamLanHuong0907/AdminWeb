@@ -63,7 +63,7 @@ const NavigationPage = () => {
     setFormData({ 
       label: "", 
       href: "", 
-      is_header: true, 
+      is_header: false, 
       sort_order: 0, // Reset về 0 hoặc tính toán số lớn nhất + 1 nếu muốn
       dropdownItems: [{ label: "", href: "" }] 
     });
